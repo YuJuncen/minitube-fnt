@@ -13,6 +13,7 @@
     "@types/react-dom": "^16.9.8",
     "@uifabric/react-cards": "^0.109.98",
     "crypto-js": "^4.0.0",
+    "flv.js": "^1.5.0",
     "luxon": "^1.24.1",
     "next": "9.3.5",
     "nookies": "^2.3.1",

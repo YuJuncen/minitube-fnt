@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { ICardTokens } from "@uifabric/react-cards";
 import { Stack, MessageBar, MessageBarType, IStackProps, Shimmer, TextField, Toggle } from "@fluentui/react"
 import Client from "../lib/miniclient";
 import errors from "../lib/errors";
@@ -13,7 +12,7 @@ export default function StreamCode({client, ...props}: {client: Client} & IStack
     const [hidden, setHidden] = useState(true)
     useEffect(() => {
         (async () => {
-            const codeResponse = await client.streamCode('mgw')
+            const codeResponse = await client.currentUserStreamCode()
             console.log(codeResponse)
             if (codeResponse.code != OK) {
                 setError(codeResponse.message)
@@ -22,7 +21,7 @@ export default function StreamCode({client, ...props}: {client: Client} & IStack
             setCode(codeResponse.key)
         })()
         return () => { }
-    })
+    }, [])
     const cardTokens : IStackTokens = {
         childrenGap: 12
     }

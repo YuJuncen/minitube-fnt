@@ -10,11 +10,15 @@ class Client {
         return `${this.apiURL}/stream`
     }
 
-    get headers(): any {
+    pullStreamAPIFor(username: string): string {
+        return `${this.apiURL}:8080/live/${username}.flv`
+    }
+
+    async getHeaders() : Promise<any> {
         const headers = {}
         headers['Content-Type'] = 'application/json'
         if (this.token.length) {
-            headers['Authorization'] = `MiniTube ${this.token}`
+            headers['Authorization'] = `MiniTube ${await this.getOrRefreshToken()}`
         }
         return headers
     }
@@ -49,14 +53,29 @@ class Client {
         return new Client(process.env.API || "http://47.103.193.47")
     }
 
+    private async fetchJSON(url: RequestInfo, init: RequestInit) {
+        try {
+            const result = await fetch(url, init)
+            const j = await result.json()
+            return j
+        } catch (e) {
+            console.log(e)
+            return {
+                // 600 不是 HTTP Status Code,所以 ytb 应该不会用它.
+                code: 600,
+                error: e,
+                message: '发生了未知的错误,请前往控制台查看详细信息'
+            }
+        }
+    }
+
     async logout() {
-        const result = await fetch(`${this.apiURL}/logout`, {
+        const j = await this.fetchJSON(`${this.apiURL}/logout`, {
             method: 'POST',
             headers: {
-                ...this.headers
+                ...await this.getHeaders()
             }
         })
-        const j = await result.json()
         if (j.code == 200) {
             destroyCookie(null, TOKEN_NOT_EXPIRED)
             destroyCookie(null, TOKEN)
@@ -67,13 +86,12 @@ class Client {
     async refresh(): Promise<boolean> {
         const cookies = parseCookies()
         if (!cookies[TOKEN_NOT_EXPIRED] && cookies.token) {
-            const result = await fetch(`${this.apiURL}/refresh`, {
+            const j = await this.fetchJSON(`${this.apiURL}/refresh`, {
                 method: "POST",
                 headers: {
-                    ...this.headers
+                    ...await this.getHeaders()
                 }
             })
-            const j = await result.json()
             if (j.code == codes.OK) {
                 setCookie(null, TOKEN, j.token, {
                     maxAge: 24 * 60 * 60
@@ -88,7 +106,7 @@ class Client {
     }
 
     async register(username: string, password: string): Promise<{ code: number, message: string }> {
-        const result = await fetch(`${this.apiURL}/register`, {
+        const j = await this.fetchJSON(`${this.apiURL}/register`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -98,12 +116,21 @@ class Client {
                 password: this.encryptPassword(password)
             }),
         })
-        const j = await result.json()
+        await this.login(username, this.encryptPassword(password))
+        return j
+    }
+
+    async whoAmI() {
+        const j = await this.fetchJSON(`${this.apiURL}/user/me`, {
+            headers: {
+                ...await this.getHeaders()
+            }
+        })
         return j
     }
 
     async login(username: string, password: string): Promise<LoginResult> {
-        const result = await fetch(`${this.apiURL}/login`, {
+        const j = await this.fetchJSON(`${this.apiURL}/login`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -113,7 +140,6 @@ class Client {
                 password: this.encryptPassword(password)
             })
         })
-        const j = await result.json()
         if (j.code == codes.OK) {
             setCookie(null, TOKEN, j.token, {
                 maxAge: 24 * 60 * 60
@@ -126,13 +152,20 @@ class Client {
     }
 
     async streamCode(username: string) {
-        const result = await fetch(`${this.streamAPIURL}/key/${username}`, {
+        const j = await this.fetchJSON(`${this.streamAPIURL}/key/${username}`, {
             headers: {
-                ...this.headers
+                ...await this.getHeaders()
             }
         })
-        const j = await result.json()
         return j
+    }
+
+    async currentUserStreamCode() {
+        const me = await this.whoAmI()
+        if (me.code == 200) {
+            return this.streamCode(me.user.username)
+        }
+        return me
     }
 }
 
