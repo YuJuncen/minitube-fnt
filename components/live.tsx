@@ -3,8 +3,8 @@ import { useRef, useEffect, useState, CSSProperties } from 'react'
 import Client from '../lib/miniclient'
 import { Overlay, DefaultPalette } from '@fluentui/react'
 import ErrorLayer from './errorlayer'
-import DanmuList from './danmu'
-import DanmuLayer from './danmulayer'
+import DanmakuList from './danmaku'
+import DanmakuLayer from './danmaku-layer'
 import { EventEmitter } from 'events'
 
 const overlayContainer : CSSProperties= {position: 'absolute', top: 0, left: 0, height: '100%', width: '100%', overflow: 'hidden'}
@@ -47,7 +47,7 @@ export default function Live() {
 
     return (<div style={{position: 'relative'}}>
         <div style={overlayContainer}>
-            <DanmuLayer source={emitter}></DanmuLayer>
+            <DanmakuLayer source={emitter}></DanmakuLayer>
         </div>
     {
         err ?

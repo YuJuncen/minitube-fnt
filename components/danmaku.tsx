@@ -5,7 +5,7 @@ import * as timeago from 'timeago.js';
 import { useState, useEffect } from "react";
 import { List } from 'immutable';
 
-export default function DanmuList() {
+export default function DanmakuList() {
     const [danmu, setDanmu] = useState(List([]))
     const [userDanmu, setUserDanmu] = useState('')
     const pushDanmu = (content: string) => {

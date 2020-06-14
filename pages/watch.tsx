@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic'
 import Title from '../components/title'
 import { Stack } from '@fluentui/react'
-import DanmuList from '../components/danmu'
+import DanmakuList from '../components/danmaku'
 
 const Video = dynamic(
   () => import('../components/live'),
@@ -14,7 +14,7 @@ export default function Live() {
       <Title text="直播"></Title>
       <Stack horizontal>
         <Video />
-        <DanmuList />
+        <DanmakuList />
       </Stack>
     </Stack>
   )
