@@ -89,7 +89,7 @@ class Client {
             const j = await this.fetchJSON(`${this.apiURL}/refresh`, {
                 method: "POST",
                 headers: {
-                    ...await this.getHeaders()
+                    'Authorization': `MiniTube ${this.token}`
                 }
             })
             if (j.code == codes.OK) {

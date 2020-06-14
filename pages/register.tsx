@@ -9,7 +9,7 @@ import { useState } from 'react';
 import Router from 'next/router'
 import errors from '../lib/errors'
 import Title from '../components/title'
-import { Button } from '@fluentui/react'
+import { Button, MaskedTextField, IconNames } from '@fluentui/react'
 import utils from '../lib/utils'
 
 
@@ -19,10 +19,13 @@ export default function Register() {
   const [repeat, setRepeat] = useState<string>('')
   const [error, setError] = useState({ message: '', code: Codes.OK })
   const [working, setWorking] = useState(false)
+  const [email, setEmail] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
 
   const checkRepeat = () => password == repeat ? '' : '密码还有确认密码不一致哦！'
   const usernameChecker = () => (username.length < 21) ? '' : '名字的长度不能超过 20 个字符哦！'
-  const valid = () => [username, password, repeat].every(x => x != '') && usernameChecker() == '' && checkRepeat() == ''
+  const checkEmail = () => email.length == 0 || /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/.test(email) ? '' : '邮箱格式不对哦!'
+  const valid = () => [username, password, repeat].every(x => x != '') && [usernameChecker, checkEmail, checkRepeat].every(x => x() == '')
   const client = Client.global()
   const registerFormStyle: IStackItemStyles = {
     root: {
@@ -55,9 +58,11 @@ export default function Register() {
               {error.code}: <em>{errors.messageBy(error.message)}</em>
             </MessageBar>
           )}
-          <TextField label="用户名" onGetErrorMessage={usernameChecker} required={true} onChange={(_, v) => { setUserName(v) }} />
-          <TextField type="password" label="密码" required={true} onChange={(_, v) => { setPassword(v) }} />
-          <TextField type="password" label="确认密码" required={true} onGetErrorMessage={checkRepeat} onChange={(_, v) => { setRepeat(v) }} />
+          <TextField label="用户名" onGetErrorMessage={usernameChecker} required={true} onChange={(_, v) => { setUserName(v) }} iconProps={{iconName: 'Contact'}}/>
+          <TextField label="邮箱" onGetErrorMessage={checkEmail} onChange={(_, v) => setEmail(v)} iconProps={{iconName: 'Mail'}}></TextField>
+          <MaskedTextField label="手机号码" mask="999-9999-9999" onChange={(_, v) => setPhoneNumber(v)} iconProps={{iconName: 'Cellphone'}}></MaskedTextField>
+          <TextField type="password" label="密码" required={true} onChange={(_, v) => { setPassword(v) }} iconProps={{iconName: 'PasswordField'}} />
+          <TextField type="password" label="确认密码" required={true} onGetErrorMessage={checkRepeat} onChange={(_, v) => { setRepeat(v) }} iconProps={{iconName: 'PasswordField'}} />
           
           <PrimaryButton text={working ? '正在注册...' : '注册'} disabled={!valid() || working} onClick={startRegister} />
           <Button text="已经是 yantube 的粉丝? 去登陆!" onClick={() => Router.push('/login')} />
