@@ -37,13 +37,14 @@ function useBoundInput(props: ITextFieldProps, init? : string) : [JSX.Element, s
 
 function makeLoginKey(username: string) : Partial<{username, phone, email}> {
     if (username.startsWith('+')) return { phone: username }
+    if (/^[0-9]/.test(username)) return { phone: `+86${username}`}
     if (username.indexOf('@') != -1) return { email: username }
     return { username }
 }
 
 const usernameChecker = (username: string) => /[a-zA-Z][\d\w_-]{0,19}/.test(username) ? '' : '名字的长度不能超过 20 个字符, 而且必须以字母开头, 还不能包含特殊符号哦！'
 const emailChecker = (email: string) => email.length == 0 || /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/.test(email) ? '' : '邮箱格式不对哦!'
-const phoneChecker = (phone: string) => (phone.length == 11 || (phone.startsWith('+86') && phone.length == 14)) ? '' : '手机号必须是中国地区的手机号(+86)哦!'
+const phoneChecker = (phone: string) => (phone.length == 0 || phone.length == 11 || (phone.startsWith('+86') && phone.length == 14)) ? '' : '手机号必须是中国地区的手机号(+86)哦!'
 
 type WithValueType<T, V> = { [P in keyof T]: V }
 

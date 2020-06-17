@@ -56,7 +56,10 @@ export default function Login() {
                             {error.code}: <em>{errors.messageBy(error.message)}</em>
                         </MessageBar>
                     )}
-                    <TextField label="用户名" onGetErrorMessage={usernameChecker} required={true} onChange={(_, v) => { setUserName(v) }} />
+                    <TextField label="用户名" placeholder="手机号/邮箱/用户名都可以哦!" 
+                        onGetErrorMessage={usernameChecker} 
+                        required={true} 
+                        onChange={(_, v) => { setUserName(v) }} />
                     <TextField type="password" label="密码" required={true} onChange={(_, v) => { setPassword(v) }} />
                     <PrimaryButton text={ working ? "登录中" : "登录"} disabled={!valid() || working} onClick={() => utils.startWork(login, setWorking)} />
                     <Button text="还不是 yantube 的粉丝? 去注册!" onClick={toRegister}></Button>

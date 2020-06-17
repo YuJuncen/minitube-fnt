@@ -16,4 +16,15 @@ type DiffUserInfo = Partial<{
     live_name: string
 }>
 
-export type { User, DiffUserInfo }
+type Danmaku = {
+    size: string,
+    color: string,
+    content: string,
+    time: string,
+    user: {
+        username: string,
+        avatar: string,
+    }
+}
+
+export type { User, DiffUserInfo, Danmaku }

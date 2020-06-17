@@ -15,15 +15,13 @@ export default function ErrorLayer({ text, ...props }: { text: string } & IStack
     }
 
     return (
-        <Overlay>
-            <Stack {...props} tokens={{childrenGap: 12}} verticalAlign='center' horizontalAlign='center' style={{...props.style, ...layerStyle}}>
-                <Stack.Item>
-                    <FontIcon iconName="Blocked2" style={iconStyle}></FontIcon>
-                </Stack.Item>
-                <Stack.Item>
-                    <Text variant='xLargePlus'>{text}</Text>
-                </Stack.Item>
-            </Stack>
-        </Overlay>
+        <Stack {...props} tokens={{childrenGap: 12}} verticalAlign='center' horizontalAlign='center' style={{...props.style, ...layerStyle}}>
+            <Stack.Item>
+                <FontIcon iconName="Error" style={iconStyle}></FontIcon>
+            </Stack.Item>
+            <Stack.Item>
+                <Text variant='xLargePlus'>{text}</Text>
+            </Stack.Item>
+        </Stack>
     )
 }

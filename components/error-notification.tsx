@@ -5,6 +5,6 @@ import errors from '../lib/errors';
 
 export default function ErrorNotification({error, ...props} : {error: Fail} & IMessageBarProps) {
     return <MessageBar messageBarType={MessageBarType.error} {...props}>
-        <b>{error.code}</b>{errors.messageBy(error.message)}
+        <b>[ {error.code || "???"} ]</b> {errors.messageByObj(error)}
     </MessageBar>
 }

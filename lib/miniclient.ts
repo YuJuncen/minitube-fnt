@@ -48,7 +48,7 @@ class Client {
                 console.log("token refreshed")
             }
         }
-        return cookies.token || ''
+        return parseCookies().token || ''
     }
 
     constructor(apiURL: string) {
@@ -71,6 +71,14 @@ class Client {
             const j = await result.json()
             return j
         } catch (e) {
+            if (e instanceof TypeError) {
+                return {
+                    code: 601,
+                    error: e,
+                    noTranslate: true,
+                    message: '网络似乎有点问题'
+                }
+            }
             console.log(e)
             return {
                 // 600 不是 HTTP Status Code,所以 ytb 应该不会用它.

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Stack, MessageBar, MessageBarType, IStackProps, Shimmer, TextField, Toggle } from "@fluentui/react"
 import Client from "../lib/miniclient";
-import errors from "../lib/errors";
 import { IStackTokens } from "@fluentui/react/lib-commonjs/Stack";
+import ErrorNotification from "./error-notification";
 
 const OK = 200
 
@@ -14,7 +14,7 @@ export default function StreamCode({client, ...props}: {client: Client} & IStack
         (async () => {
             const codeResponse = await client.currentUserStreamCode()
             if (Client.isFail(codeResponse)) {
-                setError(codeResponse.message)
+                setError(codeResponse)
                 return
             }
             setCode(codeResponse.key)
@@ -46,11 +46,7 @@ export default function StreamCode({client, ...props}: {client: Client} & IStack
             </Stack>
             ]}
 
-            {error && <MessageBar
-                messageBarType={MessageBarType.error}
-            >
-                <b>出现错误：</b>{errors.messageBy(error)}
-                </MessageBar>}
+            {error && <ErrorNotification error={error} />}
         </Stack>
     )
 }
