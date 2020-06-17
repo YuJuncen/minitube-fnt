@@ -1,10 +1,22 @@
 import sha256 from 'crypto-js/sha256'
 import { parseCookies, setCookie, destroyCookie } from 'nookies'
 import codes from './codes'
+import utils from './utils'
+import { User, DiffUserInfo } from './modles'
 type LoginResult = { code: 200, expire: string, token: string } | { code: number, message: string }
+type Success<T> = {code: 200} & T 
+type Fail = {code: number, message: string}
+type Reply<T> = Success<T> | Fail
 const TOKEN_NOT_EXPIRED = 'token-not-expired'
 const TOKEN = 'token'
 class Client {
+    static isOK<T>(r: Reply<T>) : r is Success<T> {
+        return r.code == 200
+    }
+    static isFail<T>(r: Reply<T>) : r is Fail {
+        return r.code != 200
+    }
+
     apiURL: string
     get streamAPIURL(): string {
         return `${this.apiURL}/stream`
@@ -105,7 +117,7 @@ class Client {
         return false
     }
 
-    async register(username: string, password: string): Promise<{ code: number, message: string }> {
+    async register(username: string, password: string, init?: {email?: string, phone?: string}): Promise<{ code: number, message: string }> {
         const j = await this.fetchJSON(`${this.apiURL}/register`, {
             method: "POST",
             headers: {
@@ -113,14 +125,15 @@ class Client {
             },
             body: JSON.stringify({
                 username,
-                password: this.encryptPassword(password)
+                password: this.encryptPassword(password),
+                ...init
             }),
         })
         await this.login(username, this.encryptPassword(password))
         return j
     }
 
-    async whoAmI() {
+    async whoAmI() : Promise<Reply<{user: User}>> {
         const j = await this.fetchJSON(`${this.apiURL}/user/me`, {
             headers: {
                 ...await this.getHeaders()
@@ -136,7 +149,7 @@ class Client {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                username,
+                ...utils.makeLoginKey(username),
                 password: this.encryptPassword(password)
             })
         })
@@ -160,13 +173,22 @@ class Client {
         return j
     }
 
-    async currentUserStreamCode() {
+    async currentUserStreamCode() : Promise<Reply<{key: string}>> {
         const me = await this.whoAmI()
-        if (me.code == 200) {
+        if (Client.isOK(me)) {
             return this.streamCode(me.user.username)
         }
         return me
     }
+    async updateProfile(diffProfile: DiffUserInfo) : Promise<Reply<{}>> {
+        const result = await this.fetchJSON(`${this.apiURL}/user/profile`, {
+            method: 'POST',
+            body: JSON.stringify(diffProfile),
+            headers: await this.getHeaders()
+        })
+        return result
+    }
 }
 
 export default Client
+export type {Fail, Success}

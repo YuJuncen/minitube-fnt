@@ -36,7 +36,10 @@ export default function Register() {
     childrenGap: 10,
   }
   const register = async () => {
-    const result = await client.register(username, password)
+    const init : Partial<{email: string, phone: string}> = {}
+    if (email != '') init.email = email
+    if (phoneNumber != '') init.phone = `+86${phoneNumber}`
+    const result = await client.register(username, password, init)
     if (result.code != Codes.OK) {
       setError({ message: result.message, code: result.code })
       return
@@ -60,7 +63,7 @@ export default function Register() {
           )}
           <TextField label="用户名" onGetErrorMessage={usernameChecker} required={true} onChange={(_, v) => { setUserName(v) }} iconProps={{iconName: 'Contact'}}/>
           <TextField label="邮箱" onGetErrorMessage={checkEmail} onChange={(_, v) => setEmail(v)} iconProps={{iconName: 'Mail'}}></TextField>
-          <MaskedTextField label="手机号码" prefix="+86" mask="999-9999-9999" onChange={(_, v) => setPhoneNumber(v)} iconProps={{iconName: 'Cellphone'}}></MaskedTextField>
+          <MaskedTextField label="手机号码" prefix="+86" mask="99999999999" onChange={(_, v) => setPhoneNumber(v)} iconProps={{iconName: 'Cellphone'}}></MaskedTextField>
           <TextField type="password" label="密码" required={true} onChange={(_, v) => { setPassword(v) }} iconProps={{iconName: 'PasswordField'}} />
           <TextField type="password" label="确认密码" required={true} onGetErrorMessage={checkRepeat} onChange={(_, v) => { setRepeat(v) }} iconProps={{iconName: 'PasswordField'}} />
           <PrimaryButton text={working ? '正在注册...' : '注册'} disabled={!valid() || working} onClick={startRegister} />

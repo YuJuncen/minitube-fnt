@@ -13,14 +13,12 @@ export default function StreamCode({client, ...props}: {client: Client} & IStack
     useEffect(() => {
         (async () => {
             const codeResponse = await client.currentUserStreamCode()
-            console.log(codeResponse)
-            if (codeResponse.code != OK) {
+            if (Client.isFail(codeResponse)) {
                 setError(codeResponse.message)
                 return
             }
             setCode(codeResponse.key)
         })()
-        return () => { }
     }, [])
     const cardTokens : IStackTokens = {
         childrenGap: 12
