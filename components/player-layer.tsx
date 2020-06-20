@@ -1,62 +1,125 @@
-import { CSSProperties, useState } from "react";
-import { Overlay, Stack, IconButton, IconNames, mergeStyles, DefaultPalette, IIconProps, TextField } from "@fluentui/react";
+import { CSSProperties, useState, useEffect, useCallback } from "react";
+import { Overlay, Stack, IconButton, IconNames, mergeStyles, DefaultPalette, IIconProps, TextField, TooltipHost } from "@fluentui/react";
 import styles from "../lib/styles";
 import ToggleButtonWithTooltip from "./toggle-button";
+import utils from "../lib/utils";
+import { isFunction } from "util";
 
 interface IPlayerLayerControls {
-    onPause: () => void,
-    onPlay: () => void,
+    onPause: () => void | Promise<void>,
+    onPlay: () => void | Promise<void>,
     onDisableDanmaku: () => void,
     onEnableDanmaku: () => void,
     onFullScreen: () => void,
     onBackToWindow: () => void,
-    onSendDanmaku: ({content: string}) => void,
+    onSendDanmaku: ({ content: string }) => void,
     onReload: () => void,
+    danmakuIsOn: boolean
 }
 
-export default function PlayerLayer({...events} : Partial<IPlayerLayerControls>) {
+
+export default function PlayerLayer({ ...events }: Partial<IPlayerLayerControls>) {
     const [fullScreen, setFullScreen] = useState(false)
+    const [playing, setPlaying] = useState(false)
+    const [danmakuOn, setDanmakuOn] = useState(true)
+    const [pausing, setPausing] = useState(false)
+    const [danmaku, setDanmaku] = useState('')
+    useEffect(() => {
+        document.addEventListener('fullscreenchange', (event) => {
+            setFullScreen(document.fullscreenElement != null)
+        })
+    }, [])
     const iconClass = mergeStyles({
         color: DefaultPalette.themeDarker,
     })
+    const playBarClass = mergeStyles({
+        transition: "all .5s",
+        opacity: 0,
+        selectors: {
+            '&:hover': {
+                opacity: 1
+            }
+        }
+    })
+    const sendDanmaku = useCallback(() => {
+        events?.onSendDanmaku({ content: danmaku })
+        setDanmaku('')
+    }, [])
     const getIconProps = (name: string): IIconProps => {
         return { iconName: name, className: iconClass }
     }
-    return <Stack style={{ ...styles.growToMax,
-        borderRadius: '4px' }} verticalAlign="end">
+    const coverClass = mergeStyles({
+        selectors: {
+            '&:hover': {
+                cursor: "pointer"
+            }
+        }
+    })
+    return <Stack style={{
+        ...styles.growToMax,
+        borderRadius: '4px'
+    }} verticalAlign="end" 
+    className={playing ? '' : coverClass}
+    onClick={async () => {
+        if (!playing && events.onPlay) {
+            try {
+                await events.onPlay()
+                setPausing(true)
+                setPlaying(true)
+            } finally {
+                setPausing(false)
+            }
+        }
+    }}>
         <Stack.Item key="content" align="end"
             tokens={{ margin: 8, padding: 16 }}
+            className={playBarClass}
             styles={{ root: { width: 'calc(100% - 16px)', borderRadius: '2px', backgroundColor: "#ffffffcc", backdropFilter: "blur(4px)" } }}>
-            <Stack horizontal style={styles.growToHMax} horizontalAlign="end">
+            <Stack horizontal style={styles.growToHMax} horizontalAlign="end" styles={{}}>
                 <Stack.Item key="pause" align="start">
                     <ToggleButtonWithTooltip
                         tooltip={playing => playing ? '暂停' : '播放'}
                         on={getIconProps('Pause')}
                         off={getIconProps('Play')}
-                        onToggle={isPlaying => {
-                            if (isPlaying && events.onPause) {
-                                events.onPause()
+                        disabled={pausing}
+                        onToggle={async isPlaying => {
+                            setPausing(true)
+                            try {
+                                if (isPlaying && events.onPause) {
+                                    await events.onPause()
+                                }
+                                if (!isPlaying && events.onPlay) {
+                                    await events.onPlay()
+                                }
+                            } finally {
+                                setPausing(false)
                             }
-                            if (!isPlaying && events.onPlay) {
-                                events.onPlay()
-                            }
-                        }} />
+                        }}
+                        model={{ value: playing, setModel: setPlaying }} />
                 </Stack.Item>
                 <Stack.Item key="reload">
-                <ToggleButtonWithTooltip
-                        tooltip={_ => '重新加载'}
-                        on={getIconProps('Refresh')}
-                        off={getIconProps('Refresh')} 
-                        onToggle={() => {if (events.onReload) { events.onReload() }}}
-                        />
+                    <TooltipHost id='id-reload' content={'重新加载'}>
+                        <IconButton
+                            onClick={() => {
+                                if (events.onReload) {
+                                    events.onReload()
+                                }
+                                setPausing(false)
+                                setPlaying(false)
+                            }}
+                            iconProps={getIconProps('Refresh')}
+                        >
+                        </IconButton>
+                    </TooltipHost>
+
                 </Stack.Item>
 
-                {fullScreen ? [
+                {fullScreen && events.danmakuIsOn ? [
                     <Stack.Item key="gap" grow>
-                        <TextField placeholder="发送弹幕!" borderless></TextField>
+                        <TextField placeholder="发送弹幕!" borderless value={danmaku} onChange={(_, v) => setDanmaku(v)}></TextField>
                     </Stack.Item>,
                     <Stack.Item key="send">
-                        <IconButton iconProps={{ iconName: "Send" }}></IconButton>
+                        <IconButton disabled={danmaku.length == 0} iconProps={{ iconName: "Send" }} onClick={sendDanmaku}></IconButton>
                     </Stack.Item>] :
                     <Stack.Item grow><div style={styles.growToHMax}></div></Stack.Item>
                 }
@@ -64,7 +127,7 @@ export default function PlayerLayer({...events} : Partial<IPlayerLayerControls>)
                     <ToggleButtonWithTooltip
                         tooltip={danmakuOn => danmakuOn ? '关闭弹幕' : '开启弹幕'}
                         on={getIconProps("MessageFill")}
-                        off={getIconProps("Message")} 
+                        off={getIconProps("Message")}
                         onToggle={isDanmakuOn => {
                             if (isDanmakuOn && events.onDisableDanmaku) {
                                 events.onDisableDanmaku()
@@ -73,7 +136,8 @@ export default function PlayerLayer({...events} : Partial<IPlayerLayerControls>)
                                 events.onEnableDanmaku()
                             }
                         }}
-                        />
+                        model={{ value: danmakuOn, setModel: setDanmakuOn }}
+                    />
                 </Stack.Item>
                 <Stack.Item key="fullscreen" align="end">
                     <ToggleButtonWithTooltip
@@ -81,13 +145,16 @@ export default function PlayerLayer({...events} : Partial<IPlayerLayerControls>)
                         on={getIconProps('BackToWindow')}
                         off={getIconProps('FullScreen')}
                         onToggle={isFullScreen => {
-                            setFullScreen(!isFullScreen)
                             if (isFullScreen && events.onBackToWindow) {
                                 events.onBackToWindow()
-                            } 
+                            }
                             if (!isFullScreen && events.onFullScreen) {
                                 events.onFullScreen()
                             }
+                        }}
+                        model={{
+                            value: fullScreen,
+                            setModel: setFullScreen
                         }} />
                 </Stack.Item>
             </Stack>

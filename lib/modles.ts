@@ -23,8 +23,20 @@ type Danmaku = {
     time: string,
     user: {
         username: string,
-        avatar: string,
+        avatar?: string,
     }
 }
 
-export type { User, DiffUserInfo, Danmaku }
+type Profile = {
+    username: string,
+    live_name: string,
+    live_intro: string,
+}
+
+type LiveProfile = {
+    username: string,
+    live_name: string,
+    live_intro: string
+}
+
+export type { User, DiffUserInfo, Danmaku, Profile, LiveProfile }

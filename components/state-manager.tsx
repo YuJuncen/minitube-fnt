@@ -4,6 +4,7 @@ import FlvJs from "flv.js";
 import ErrorLayer from "./error-layer";
 import LoadingLayer from "./loading-layer";
 import { DefaultPalette } from "@fluentui/react";
+import PausedLayer from "./paused-layer";
 
 enum States {
     Loading,
@@ -31,8 +32,9 @@ export default function StateLayer({ events } : { events: EventEmitter }) {
         setState({state: States.Loading})
     }
     
-    events.on("loaded", toPlaying)
+    events.on("loaded", toPaused)
     events.on("pause", toPaused)
+    events.on("play", toPlaying)
     events.on("error", toError)
     events.on("reload", toLoading)
 
@@ -41,8 +43,10 @@ export default function StateLayer({ events } : { events: EventEmitter }) {
         return <ErrorLayer text={currentState.message} style={errorStyle}></ErrorLayer>
     }
     if (currentState.state == States.Loading) {
-        console.log("loading", currentState)
-        return <LoadingLayer></LoadingLayer>
+        return <LoadingLayer />
+    }
+    if (currentState.state == States.Paused) {
+        return <PausedLayer />
     }
     return <></>
 }

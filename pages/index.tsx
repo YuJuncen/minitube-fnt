@@ -1,33 +1,24 @@
-import { Pivot, PivotItem, IStyleSet, ILabelStyles, Text, Stack } from '@fluentui/react'
-import Client from '../lib/miniclient'
-import UserCard from '../components/usercard'
-import StreamCode from '../components/streamcode';
-import Title from '../components/title';
+import Client from "../lib/miniclient";
+import { useState, useEffect, useCallback } from "react";
+import { LiveProfile } from "../lib/modles";
+import { List } from "@fluentui/react";
+import LiveCard from "../components/live-card";
 
-const componentStyles: Partial<IStyleSet<ILabelStyles>> = {
-    root: {
-        marginTop: 10,
-    },
-};
-
-export default function Home() {
+export default function Index() {
     const client = Client.global()
-    const items = {
-        '关于我': UserCard,
-        '我的推流马': StreamCode
-    }
-
-
-    return (<Stack horizontal horizontalAlign="center">
-        <Stack.Item grow styles={{ root: { maxWidth: 500 } }}>
-            <Title text="我的"></Title>
-            <Pivot>
-                {Object.entries(items).map(([title, Component]) => {
-                    return (<PivotItem headerText={title} key={title}>
-                        <Component client={client} styles={componentStyles}></Component>
-                    </PivotItem>)
-                })}
-            </Pivot>
-        </Stack.Item>
-    </Stack>)
+    const [lives, setLives] = useState<LiveProfile[]>()
+    useEffect(() => {
+        client.getRandomLiveRooms(10)
+            .then(lives => {
+                if (Client.isOK(lives)) {
+                    setLives(lives.users)
+                    return
+                }
+                console.log("工-口发生: ", lives);
+            })
+    })
+    const renderLive = useCallback((live: LiveProfile) => {
+        return <LiveCard live={live}></LiveCard>
+    }, [])
+    return <List items={lives} onRenderCell={renderLive}></List>
 }

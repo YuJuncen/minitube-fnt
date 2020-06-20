@@ -42,7 +42,6 @@ export default function DanmakuLayer({ source }: { source: EventEmitter }) {
             const baseTime = 7000
             const diffTime = Math.round(Math.random() * 3000)
             runDanmu(danmaku, baseTime + diffTime, ref.current)
-            console.log(`LAYER: new danmaku ${JSON.stringify({size, color, content, ...props})}`)
         }
         source.on('danmaku', listener)
         return () => source.off('danmaku', listener)

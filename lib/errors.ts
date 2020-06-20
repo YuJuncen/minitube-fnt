@@ -2,7 +2,8 @@ const patterns : Array<[RegExp, (info: any) => string]> = [
     [/token is empty/, _ => "登陆已经过期"],
     [/incorrect Username or Password/i, _ => "用户名或者密码错误"],
     [/username already exists/i, _ => "用户名已经存在"],
-    [/failed to fetch/i, _ => "请求失败, 网络似乎有问题"]
+    [/failed to fetch/i, _ => "请求失败, 网络似乎有问题"],
+    [/password is wrong/i, _ => "密码似乎错误辣!"]
 ]
 
 function messageByObj(origin: Partial<{message: string, noTranslate?: boolean}>) : string {

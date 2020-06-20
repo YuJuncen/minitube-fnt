@@ -2,18 +2,18 @@ import sha256 from 'crypto-js/sha256'
 import { parseCookies, setCookie, destroyCookie } from 'nookies'
 import codes from './codes'
 import utils from './utils'
-import { User, DiffUserInfo } from './modles'
+import { User, DiffUserInfo, Profile, LiveProfile } from './modles'
 type LoginResult = { code: 200, expire: string, token: string } | { code: number, message: string }
-type Success<T> = {code: 200} & T 
-type Fail = {code: number, message: string}
+type Success<T> = { code: 200 } & T
+type Fail = { code: number, message: string }
 type Reply<T> = Success<T> | Fail
 const TOKEN_NOT_EXPIRED = 'token-not-expired'
 const TOKEN = 'token'
 class Client {
-    static isOK<T>(r: Reply<T>) : r is Success<T> {
+    static isOK<T>(r: Reply<T>): r is Success<T> {
         return r.code == 200
     }
-    static isFail<T>(r: Reply<T>) : r is Fail {
+    static isFail<T>(r: Reply<T>): r is Fail {
         return r.code != 200
     }
 
@@ -26,7 +26,7 @@ class Client {
         return `${this.apiURL}:8080/live/${username}.flv`
     }
 
-    async getHeaders() : Promise<any> {
+    async getHeaders(): Promise<any> {
         const headers = {}
         headers['Content-Type'] = 'application/json'
         if (this.token.length) {
@@ -103,6 +103,18 @@ class Client {
         return j
     }
 
+    async changePassword(oldPassword: string, newPassword: string): Promise<Reply<void>> {
+        const result = await this.fetchJSON(`${this.apiURL}/user/password`, {
+            method: "POST",
+            headers: await this.getHeaders(),
+            body: JSON.stringify({
+                old_password: this.encryptPassword(oldPassword),
+                new_password: this.encryptPassword(newPassword)
+            })
+        })
+        return result
+    }
+
     async refresh(): Promise<boolean> {
         const cookies = parseCookies()
         if (!cookies[TOKEN_NOT_EXPIRED] && cookies.token) {
@@ -125,7 +137,7 @@ class Client {
         return false
     }
 
-    async register(username: string, password: string, init?: {email?: string, phone?: string}): Promise<{ code: number, message: string }> {
+    async register(username: string, password: string, init?: { email?: string, phone?: string }): Promise<{ code: number, message: string }> {
         const j = await this.fetchJSON(`${this.apiURL}/register`, {
             method: "POST",
             headers: {
@@ -141,7 +153,7 @@ class Client {
         return j
     }
 
-    async whoAmI() : Promise<Reply<{user: User}>> {
+    async whoAmI(): Promise<Reply<{ user: User }>> {
         const j = await this.fetchJSON(`${this.apiURL}/user/me`, {
             headers: {
                 ...await this.getHeaders()
@@ -181,14 +193,15 @@ class Client {
         return j
     }
 
-    async currentUserStreamCode() : Promise<Reply<{key: string}>> {
+    async currentUserStreamCode(): Promise<Reply<{ key: string }>> {
         const me = await this.whoAmI()
         if (Client.isOK(me)) {
             return this.streamCode(me.user.username)
         }
         return me
     }
-    async updateProfile(diffProfile: DiffUserInfo) : Promise<Reply<{}>> {
+
+    async updateProfile(diffProfile: DiffUserInfo): Promise<Reply<{}>> {
         const result = await this.fetchJSON(`${this.apiURL}/user/profile`, {
             method: 'POST',
             body: JSON.stringify(diffProfile),
@@ -196,7 +209,16 @@ class Client {
         })
         return result
     }
+
+    async getProfileOf(user: string) : Promise<Reply<{user: Profile}>> {
+        const result = await this.fetchJSON(`${this.apiURL}/profile/${user}`, {})
+        return result
+    }
+
+    async getRandomLiveRooms(count: number) : Promise<Reply<{users: LiveProfile[]}>> {
+        return await this.fetchJSON(`${this.apiURL}/living/${count}`, {})
+    }
 }
 
 export default Client
-export type {Fail, Success}
+export type { Fail, Success }

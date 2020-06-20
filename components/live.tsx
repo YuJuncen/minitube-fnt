@@ -1,5 +1,5 @@
 import flvjs from 'flv.js'
-import { useRef, useEffect, CSSProperties } from 'react'
+import { useRef, useEffect, CSSProperties, useMemo, useState } from 'react'
 import Client from '../lib/miniclient'
 import DanmakuLayer from './danmaku-layer'
 import { EventEmitter } from 'events'
@@ -7,17 +7,24 @@ import PlayerLayer from './player-layer'
 import StateLayer from './state-manager'
 import styles from '../lib/styles'
 import { DateTime } from 'luxon'
+import { User } from '../lib/modles'
+import { platform } from 'os'
+import utils from '../lib/utils'
 
-const overlayContainer : CSSProperties= {position: 'absolute', top: 0, left: 0, height: '100%', width: '100%', overflow: 'hidden', zIndex: 1000}
+const overlayContainer: CSSProperties = { position: 'absolute', top: 0, left: 0, height: '100%', width: '100%', overflow: 'hidden', zIndex: 1000 }
 
-export default function Live({danmakuEvents} : {danmakuEvents: EventEmitter}) {
-    const ref = useRef()
+export default function Live({ danmakuEvents, currentUser, streamer }: { streamer: string, danmakuEvents: EventEmitter, currentUser?: User }) {
+    const ref = useRef<HTMLVideoElement>()
+    const playerRef = useRef<HTMLDivElement>()
     const cli = Client.global()
-    const player = flvjs.createPlayer({
+    const makePlayer = () => flvjs.createPlayer({
         type: 'flv',
-        url: cli.pullStreamAPIFor('mgw')
+        isLive: true,
+        url: cli.pullStreamAPIFor(streamer)
     })
+    const [player, setPlayer] = useState<flvjs.Player>(makePlayer)
     const playerEvents = new EventEmitter()
+    const [danmakuOn, setDanmakuOn] = useState(true)
 
     useEffect(() => {
         player.attachMediaElement(ref.current)
@@ -28,28 +35,51 @@ export default function Live({danmakuEvents} : {danmakuEvents: EventEmitter}) {
         })
         player.on(flvjs.Events.METADATA_ARRIVED, (...args) => {
             console.log(args);
-            const ply = player.play();
-            if (ply instanceof Promise) {
-                ply.catch(e => console.log("play failed" + e))
-            }
             playerEvents.emit('loaded')
         })
-        return () => player.destroy()
-    }, [])
+        player.on(flvjs.Events.STATISTICS_INFO, (...e) => console.log(e))
+        return () => {
+            if (player != null) {
+                player.destroy()
+            }
+        }
+    }, [player])
     const playerStyle: CSSProperties = {
         height: '75vh',
         width: '133.33vh'
     }
 
-    return (<div style={{position: 'relative', ...playerStyle}}>
-        <div style={{...overlayContainer, zIndex: 1001}}>
+    return (<div ref={playerRef} style={{ position: 'relative', ...playerStyle }}>
+        { danmakuOn && <div style={{ ...overlayContainer, zIndex: 1001 }}>
             <DanmakuLayer source={danmakuEvents}></DanmakuLayer>
-        </div>
+</div> }
         <div style={overlayContainer}>
             <StateLayer events={playerEvents} />
         </div>
-        <div style={{...overlayContainer, zIndex: 1002}}>
-            <PlayerLayer></PlayerLayer>
+        <div style={{ ...overlayContainer, zIndex: 1002 }}>
+            <PlayerLayer
+                onPause={() => {
+                    player?.pause()
+                    playerEvents.emit('pause')
+                }}
+                onPlay={() => {
+                    player?.play()
+                    playerEvents.emit('play')
+                }}
+                onReload={() => {
+                    player?.pause()
+                    playerEvents.emit('reload')
+                    player?.unload()
+                    player?.detachMediaElement()
+                    setPlayer(makePlayer())
+                }}
+                onEnableDanmaku={() => setDanmakuOn(true)}
+                onDisableDanmaku={() => setDanmakuOn(false)}
+                onFullScreen={() => playerRef.current.requestFullscreen()}
+                onBackToWindow={() => document.exitFullscreen()}
+                danmakuIsOn={currentUser !== undefined}
+                onSendDanmaku={({content}) => danmakuEvents.emit('danmaku', utils.makeDanmaku(content, currentUser.username))}
+            ></PlayerLayer>
         </div>
         <video ref={ref} controls={false} style={styles.growToMax}></video>
     </div>

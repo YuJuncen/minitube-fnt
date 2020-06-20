@@ -9,8 +9,9 @@ import utils, { WithValueType } from '../lib/utils'
 import { ITextFieldProps } from '@fluentui/react/lib-commonjs/TextField'
 import ErrorNotification from './error-notification'
 import { User } from '../lib/modles'
+import UserPersona from './user-persona'
 
-const params: WithValueType<{ email, phone, live_name, live_intro }, [string, string, ITextFieldProps]> = {
+const params: Record<'email' | 'phone' | 'live_name' | 'live_intro', [string, string, ITextFieldProps]> = {
     email: ['邮箱', 'Mail', {}],
     phone: ['电话', 'CellPhone', {}],
     live_name: ['直播间名字', 'Streaming', {}],
@@ -94,11 +95,7 @@ export default function UserCard({ client, ...properties }: { client: Client } &
         })
     }, [])
 
-    const mine: () => IPersonaProps = () => ({
-        text: user.username,
-        secondaryText: `在 ${timeago.format(user.created_at, 'zh_CN')}加入 yantube 粉丝团`,
-        tertiaryText: `UID: ${`${user.id}`.padStart(4, '0')}`
-    })
+
     const { components: edit, email, phone, liveName, liveIntro, valid } = useModifyUser(user)
     const [saving, saveManager] = utils.useWork()
     const handleSaveOrEdit = () => setEditable(true)
@@ -130,7 +127,7 @@ export default function UserCard({ client, ...properties }: { client: Client } &
             {user ? [
                 <Card.Section key="avatar-section">
                     <Card.Item key="me">
-                        <Persona presence={getPresence()} {...mine()} size={PersonaSize.size72} />
+                        <UserPersona user={user} presence={getPresence()} size={PersonaSize.size72} />
                     </Card.Item>
                 </Card.Section>,
                 <Card.Section key="info-section">

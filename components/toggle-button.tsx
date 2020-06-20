@@ -7,11 +7,15 @@ interface IToggleButtonProps {
     defaultOn? : boolean,
     tooltip?: (state: boolean) => string,
     onToggle?: (lastState: boolean) => void
+    model: {
+        value: boolean,
+        setModel: (boolean) => void,
+    }
 }
 
 
 export default function ToggleButtonWithTooltip({defaultOn, on, off, tooltip, onToggle, ...props} : IToggleButtonProps & IButtonProps) {
-    const [isOn, setOn] = useState(defaultOn)
+    const {value: isOn, setModel: setOn} = props.model
     const id = useId("toggle-button-with-tooltip")
     return <TooltipHost id={id} content={tooltip(isOn)}>
             <IconButton

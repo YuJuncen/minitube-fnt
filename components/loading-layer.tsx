@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 const chars = "\\|/-"
 
 export default function LoadingLayer() {
-    return <Stack style={{...styles.overlay, backgroundColor: DefaultPalette.blackTranslucent40}} verticalAlign="center" horizontalAlign="center">
+    return <Stack style={{...styles.overlay, backgroundColor: DefaultPalette.blackTranslucent40, backdropFilter: 'blur(4px)'}} verticalAlign="center" horizontalAlign="center">
         <Stack.Item key="loading">
             <Spinner styles={{circle: {
                 borderColor: `${DefaultPalette.whiteTranslucent40} ${DefaultPalette.whiteTranslucent40} ${DefaultPalette.neutralLight}`,
