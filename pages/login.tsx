@@ -6,12 +6,14 @@ import { Stack, IStackTokens, IStackItemStyles } from '@fluentui/react/lib-commo
 import { TextField } from '@fluentui/react/lib-commonjs/TextField'
 import { PrimaryButton } from '@fluentui/react/lib-commonjs/Button'
 import { MessageBar, MessageBarType } from '@fluentui/react/lib-commonjs/MessageBar'
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import errors from '../lib/errors'
 import Title from '../components/title'
 import { useRouter } from 'next/router'
 import { Button, Link } from '@fluentui/react'
 import utils from '../lib/utils'
+import MinitubeContext from '../lib/global'
+import models from '../lib/models'
 
 
 export default function Login() {
@@ -23,7 +25,10 @@ export default function Login() {
     const router = useRouter()
     const usernameChecker = () => (username.length < 21) ? '' : '名字的长度不能超过 20 个字符哦！'
     const valid = () => usernameChecker() == '' && password != '' && username != ''
-    const client = Client.global()
+    const {client, user, setUser} = useContext(MinitubeContext)
+    if (user !== models.defaultUser) {
+        router.replace('/mine')
+    }
     const registerFormStyle: IStackItemStyles = {
         root: {
             width: 500,
@@ -38,19 +43,24 @@ export default function Login() {
     }
     const login = async () => {
         const result = await client.login(username, password)
-        if (result.code != Codes.OK) {
+        if (!Client.isOK(result)) {
             const errResult = result as { message: string, code: number }
             setError({ message: errResult.message, code: errResult.code })
             return
         }
-        router.push("/")
+        const user = await client.whoAmI()
+        if (Client.isOK(user)) {
+            setUser(user.user)
+            router.push("/")
+            return
+        }
+        setError(user)
     }
 
     return (
-        <Stack>
+        <Stack style={{height: '80vh'}} verticalAlign="center" horizontalAlign="center">
             <Stack.Item align='center' styles={registerFormStyle}>
                 <Stack tokens={registerTokens}>
-                    <Title text="登录" />
                     {error.message.length && (
                         <MessageBar messageBarType={MessageBarType.blocked} onDismiss={() => setError({ message: "", code: Codes.OK })}>
                             {error.code}: <em>{errors.messageBy(error.message)}</em>

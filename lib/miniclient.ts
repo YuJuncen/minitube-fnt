@@ -2,7 +2,7 @@ import sha256 from 'crypto-js/sha256'
 import { parseCookies, setCookie, destroyCookie } from 'nookies'
 import codes from './codes'
 import utils from './utils'
-import { User, DiffUserInfo, Profile, LiveProfile } from './modles'
+import { User, DiffUserInfo, Profile, LiveProfile } from './models'
 type LoginResult = { code: 200, expire: string, token: string } | { code: number, message: string }
 type Success<T> = { code: 200 } & T
 type Fail = { code: number, message: string }
@@ -210,7 +210,7 @@ class Client {
         return result
     }
 
-    async getProfileOf(user: string) : Promise<Reply<{user: Profile}>> {
+    async getProfileOf(user: string) : Promise<Reply<{user: LiveProfile}>> {
         const result = await this.fetchJSON(`${this.apiURL}/profile/${user}`, {})
         return result
     }

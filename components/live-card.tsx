@@ -1,7 +1,8 @@
 import { DocumentCardTitle, DocumentCard, DocumentCardActivity, DocumentCardType, IDocumentCardPreviewProps, DefaultPalette, DocumentCardPreview, IconNames, DefaultFontStyles, IDocumentCard, IDocumentCardProps } from "@fluentui/react";
-import { LiveProfile } from "../lib/modles";
+import { LiveProfile } from "../lib/models";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
+import * as timeago from 'timeago.js';
 const colors = [
     DefaultPalette.themeDarker,
     DefaultPalette.themeDark,
@@ -22,8 +23,8 @@ export default function LiveCard({live, ...props}: {live: LiveProfile} & IDocume
         styles: { previewIcon: { backgroundColor: color}, root: {height: "10em"} },
     };
     const router = useRouter()
-    const toLive = useCallback(() => router.push(`/watch/${live.username}`), null)
-    const fakeLivePeoples = useMemo(() => `现在有 ${Math.trunc(Math.random() * 10000)} 人在观看！`, [])
+    const toLive = useCallback(() => router.push(`/live/${live.username}`), null)
+    const liveTime = useMemo(() => live.living ? `主播在 ${timeago.format(live.start_time, 'zh_CN')} 开播～` : "主播走了！", [live])
     return (
         <DocumentCard
             {...props}
@@ -32,7 +33,7 @@ export default function LiveCard({live, ...props}: {live: LiveProfile} & IDocume
             <DocumentCardTitle styles={{root: {height: "auto", paddingBottom: 0}}} title={live.live_name || `${live.username} 的直播间`} />
             <DocumentCardTitle styles={{root: {height: "auto", paddingBottom: 0}}} showAsSecondaryTitle title={live.live_intro} />
             <DocumentCardActivity
-                activity={fakeLivePeoples}
+                activity={liveTime}
                 people={[{
                     name: live.username,
                     initials: live.username.split(' ').map(x => (x[0] || '').toUpperCase()).join(''),

@@ -13,7 +13,7 @@ enum States {
     Paused
 }
 const errorStyle: CSSProperties = {
-    backgroundImage: `linear-gradient(to right, ${DefaultPalette.redDark}, ${DefaultPalette.red})`,
+    backgroundImage: `linear-gradient(to right, ${DefaultPalette.orange}, ${DefaultPalette.orangeLight})`,
     color: DefaultPalette.white
 }
 

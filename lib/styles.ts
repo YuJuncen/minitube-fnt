@@ -1,4 +1,5 @@
 import { CSSProperties } from "react";
+import { IStyle, DefaultPalette } from "@fluentui/react";
 
 const growToHMax : CSSProperties = {
     width: '100%'
@@ -20,4 +21,9 @@ const overlay : CSSProperties = {
     ...growToMax
 }
 
-export default { overlay, growToMax, growToVMax, growToHMax }
+const selectedBorder : CSSProperties & IStyle = {
+    border: "solid",
+    borderWidth: '2px',
+    borderColor: DefaultPalette.blackTranslucent40
+}
+export default { overlay, growToMax, growToVMax, growToHMax, selectedBorder }

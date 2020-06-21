@@ -1,5 +1,5 @@
 import { IPersonaSharedProps, Persona, PersonaSize, PersonaPresence, Button, Shimmer, TextField, IPersonaProps, PrimaryButton, IconNames, Stack, DefaultButton } from '@fluentui/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { Card, ICardTokens, ICardProps, CardItem } from '@uifabric/react-cards'
 import { useRouter } from 'next/router'
 import Client from '../lib/miniclient'
@@ -8,8 +8,9 @@ import * as timeago from 'timeago.js'
 import utils, { WithValueType } from '../lib/utils'
 import { ITextFieldProps } from '@fluentui/react/lib-commonjs/TextField'
 import ErrorNotification from './error-notification'
-import { User } from '../lib/modles'
+import models, { User } from '../lib/models'
 import UserPersona from './user-persona'
+import MinitubeContext from '../lib/global'
 
 const params: Record<'email' | 'phone' | 'live_name' | 'live_intro', [string, string, ITextFieldProps]> = {
     email: ['邮箱', 'Mail', {}],
@@ -56,45 +57,27 @@ const cardTokens: ICardTokens = {
     minWidth: '100%'
 }
 
-const defaultUser: User = {
-    id: "????",
-    username: "????",
-    created_at: "9102-01-01",
-    updated_at: "9102-01-01"
-}
-
-export default function UserCard({ client, ...properties }: { client: Client } & ICardProps) {
+export default function UserCard({ ...properties }: ICardProps) {
     const [token, setToken] = useState('fetch')
-    const [user, setUser] = useState(null)
     const [editable, setEditable] = useState(false)
     const [error, setError] = useState(null)
     const getPresence = () => {
         if (token == '') {
             return PersonaPresence.offline
         }
-        if (user == defaultUser) {
+        if (user == models.defaultUser) {
             return PersonaPresence.blocked
         }
         return PersonaPresence.online
     }
     const router = useRouter()
+    const { client, setUser, user } = useContext(MinitubeContext)
     const logout = () => {
         client.logout()
         setToken('')
+        setUser(models.defaultUser)
         router.push('/login')
     }
-    useEffect(() => {
-        client.getOrRefreshToken().then(token => setToken(token))
-        client.whoAmI().then(user => {
-            if (Client.isOK(user)) {
-                setUser(user.user)
-                return
-            }
-            setUser(defaultUser)
-            setError(user)
-        })
-    }, [])
-
 
     const { components: edit, email, phone, liveName, liveIntro, valid } = useModifyUser(user)
     const [saving, saveManager] = utils.useWork()
@@ -135,7 +118,7 @@ export default function UserCard({ client, ...properties }: { client: Client } &
                         <ErrorNotification error={error} onDismiss={() => setError(null)}></ErrorNotification>
                     </Card.Item>}
                     {editable ? edit : makeUserProfileItems(user)}
-                    {user != defaultUser && <Card.Item key="edit">
+                    {user != models.defaultUser && <Card.Item key="edit">
                         {editable ?
                             editingButtons :
                             <PrimaryButton

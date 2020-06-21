@@ -1,7 +1,8 @@
-import { useState } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { ITextFieldProps, TextField, DefaultPalette } from "@fluentui/react"
-import { Danmaku } from "./modles"
+import { Danmaku } from "./models"
 import { DateTime } from "luxon"
+import { useId } from "@uifabric/react-hooks"
 
 async function startWork<T>(work: () => Promise<T> | T, begin: () => () => void): Promise<T> {
     const end = begin()
@@ -21,10 +22,6 @@ function useWork(): [boolean, () => () => void] {
     return [working, manager]
 }
 
-// init --------------------------~~~~~~~~~~~~~~~~>
-//                               ^
-//              textInput ~~~~~~~+
-// A little like `switch`, a little bit hacky.
 function useBoundInput(props: ITextFieldProps, init?: string): [JSX.Element, string] {
     const [value, setValue] = useState('')
     const [modified, setModified] = useState(false)
@@ -35,10 +32,11 @@ function useBoundInput(props: ITextFieldProps, init?: string): [JSX.Element, str
     }
     const onChange = (e, v) => {
         if (props.onChange) props.onChange(e, v);
-        setModified(true);
+        setModified(true)
         setValue(v);
     }
-    return [<TextField {...props} onChange={onChange} value={modified ? value : init} />, value]
+    const id = useId()
+    return [<TextField key={id} {...props} onChange={onChange} value={value || ''} />, value]
 }
 
 function makeLoginKey(username: string): Partial<{ username, phone, email }> {
@@ -50,7 +48,7 @@ function makeLoginKey(username: string): Partial<{ username, phone, email }> {
 
 const usernameChecker = (username: string) => /[a-zA-Z][\d\w_-]{0,19}/.test(username) ? '' : '名字的长度不能超过 20 个字符, 而且必须以字母开头, 还不能包含特殊符号哦！'
 const emailChecker = (email: string) => email.length == 0 || /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/.test(email) ? '' : '邮箱格式不对哦!'
-const phoneChecker = (phone: string) => (phone.length == 0 || phone.length == 11 || (phone.startsWith('+86') && phone.length == 14)) ? '' : '手机号必须是中国地区的手机号(+86)哦!'
+const phoneChecker = (phone: string) => phone.length == 0 || phone.length == 11 || (phone.startsWith('+86') && phone.length == 14) ? '' : '手机号必须是中国地区的手机号(+86)哦!'
 const makeDanmaku = (content: string, by: string): Danmaku => {
     return {
         user: { username: by },

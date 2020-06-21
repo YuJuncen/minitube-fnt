@@ -3,15 +3,17 @@ import { DateTime, Duration } from 'luxon';
 import { ActivityItem, Stack, TextField, IconButton, Separator, ColorClassNames, DefaultPalette, IList, ScrollToMode } from "@fluentui/react";
 import * as Fluent from '@fluentui/react';
 import * as timeago from 'timeago.js';
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useContext } from "react";
 import { List } from 'immutable';
 import { EventEmitter } from "events";
-import { Danmaku } from "../lib/modles";
+import { Danmaku } from "../lib/models";
 import styles from "../lib/styles";
+import MinitubeContext from "../lib/global";
 
-export default function DanmakuList({ danmakus, currentUser }: { danmakus: EventEmitter, currentUser: { username: string, avatar: string } }) {
+export default function DanmakuList({ danmakus }: { danmakus: EventEmitter }) {
     const [danmaku, setDanmaku] = useState(List([]))
     const [userDanmaku, setUserDanmu] = useState('')
+    const {user: currentUser} = useContext(MinitubeContext)
     const pushDanmaku = (content: string) => {
         const fakeDanmu = { user: { username: currentUser.username }, time: DateTime.local().toString(), content, size: '28px', color: DefaultPalette.themePrimary }
         danmakus.emit('danmaku', fakeDanmu)
@@ -19,7 +21,7 @@ export default function DanmakuList({ danmakus, currentUser }: { danmakus: Event
     const listRef = useRef<IList>();
     useEffect(() => {
         const onDanmaku = (d: Danmaku) => {
-            setDanmaku(danmaku => danmaku.push(d))
+            setDanmaku(danmaku => danmaku.push(d).takeLast(20))
         }
         danmakus.on('danmaku', onDanmaku)
         return () => danmakus.off('danmaku', onDanmaku)
@@ -40,7 +42,7 @@ export default function DanmakuList({ danmakus, currentUser }: { danmakus: Event
                     <Stack.Item grow={1} styles={{ root: { maxHeight: '100%', overflowY: 'auto' } }}>
                        <Fluent.List
                         componentRef={listRef} 
-                        items={danmaku.takeLast(20).toArray()}
+                        items={danmaku.toArray()}
                         onRenderCell={renderDanmaku}
                        />
                     </Stack.Item>

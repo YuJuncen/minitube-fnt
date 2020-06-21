@@ -1,15 +1,18 @@
 import utils from "../lib/utils";
 import { Stack, Separator, PrimaryButton, MessageBar, MessageBarType } from "@fluentui/react";
 import Client from "../lib/miniclient";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import ErrorNotification from "./error-notification";
+import MinitubeContext from "../lib/global";
 
-export default function ChangePassword({ client }: { client: Client }) {
+export default function ChangePassword() {
     const [OriginalPasswordInput, originalPassword] = utils.useBoundInput({ label: "原先的密码", type: 'password' })
     const [NewPasswordInput, newPassword] = utils.useBoundInput({ label: "新密码", type: 'password' })
     const [NewPasswordRepeatInput, newPasswordRepeat] = utils.useBoundInput({ type: 'password', label: "确认新密码", onGetErrorMessage: () => newPassword == newPasswordRepeat ? '' : '两次确认密码不一致哦!' })
     const [state, setState] = useState<any>({ success: null })
     const [working, manager] = utils.useWork()
+    const {client} = useContext(MinitubeContext)
+    
     const changePassword = async () => {
         const result = await utils.startWork(() => client.changePassword(originalPassword, newPassword), manager)
         if (Client.isOK(result)) {

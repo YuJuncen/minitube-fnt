@@ -5,12 +5,13 @@ import { Stack, IStackTokens, IStackItemStyles } from '@fluentui/react/lib-commo
 import { TextField } from '@fluentui/react/lib-commonjs/TextField'
 import { PrimaryButton } from '@fluentui/react/lib-commonjs/Button'
 import { MessageBar, MessageBarType } from '@fluentui/react/lib-commonjs/MessageBar'
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import Router from 'next/router'
 import errors from '../lib/errors'
 import Title from '../components/title'
 import { Button, MaskedTextField, IconNames } from '@fluentui/react'
 import utils from '../lib/utils'
+import MinitubeContext from '../lib/global'
 
 
 export default function Register() {
@@ -26,7 +27,7 @@ export default function Register() {
   const usernameChecker = () => /[a-zA-Z][\d\w_-]{0,19}/.test(username) ? '' : '名字的长度不能超过 20 个字符, 而且必须以字母开头, 还不能包含特殊符号哦！'
   const checkEmail = () => email.length == 0 || /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/.test(email) ? '' : '邮箱格式不对哦!'
   const valid = () => [username, password, repeat].every(x => x != '') && [usernameChecker, checkEmail, checkRepeat].every(x => x() == '')
-  const client = Client.global()
+  const {client, setUser} = useContext(MinitubeContext)
   const registerFormStyle: IStackItemStyles = {
     root: {
       width: 500,
@@ -40,11 +41,15 @@ export default function Register() {
     if (email != '') init.email = email
     if (phoneNumber != '') init.phone = `+86${phoneNumber}`
     const result = await client.register(username, password, init)
-    if (result.code != Codes.OK) {
+    if (Client.isFail(result)) {
       setError({ message: result.message, code: result.code })
       return
     }
-    Router.push("/")
+    const user = await client.whoAmI()
+    if (Client.isOK(user)) {
+      setUser(user.user)
+      Router.push("/")
+    }
   }
   const startRegister = () => utils.startWork(register, () => {
     setWorking(true)
@@ -52,10 +57,9 @@ export default function Register() {
   })
 
   return (
-    <Stack>
-      <Stack.Item align='center' styles={registerFormStyle}>
+    <Stack style={{height: '80vh'}} horizontalAlign="center" verticalAlign="center">
+      <Stack.Item styles={registerFormStyle}>
         <Stack tokens={registerTokens}>
-          <Title text="注册"></Title>
           {error.message.length && (
             <MessageBar messageBarType={MessageBarType.blocked} onDismiss={() => setError({ message: "", code: Codes.OK })}>
               {error.code}: <em>{errors.messageBy(error.message)}</em>

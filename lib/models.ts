@@ -36,7 +36,17 @@ type Profile = {
 type LiveProfile = {
     username: string,
     live_name: string,
-    live_intro: string
+    live_intro: string,
+    start_time: string,
+    living: boolean
 }
 
+const defaultUser: User = {
+    id: "????",
+    username: "[未登录]",
+    created_at: "",
+    updated_at: ""
+}
+
+export default { defaultUser }
 export type { User, DiffUserInfo, Danmaku, Profile, LiveProfile }

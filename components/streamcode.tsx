@@ -1,15 +1,17 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Stack, MessageBar, MessageBarType, IStackProps, Shimmer, TextField, Toggle } from "@fluentui/react"
 import Client from "../lib/miniclient";
 import { IStackTokens } from "@fluentui/react/lib-commonjs/Stack";
 import ErrorNotification from "./error-notification";
+import MinitubeContext from "../lib/global";
 
 const OK = 200
 
-export default function StreamCode({client, ...props}: {client: Client} & IStackProps) {
+export default function StreamCode({...props}: IStackProps) {
     const [code, setCode] = useState('')
     const [error, setError] = useState(null)
     const [hidden, setHidden] = useState(true)
+    const {client} = useContext(MinitubeContext)
     useEffect(() => {
         (async () => {
             const codeResponse = await client.currentUserStreamCode()

@@ -1,9 +1,10 @@
-import { Pivot, PivotItem, IStyleSet, ILabelStyles, Text, Stack } from '@fluentui/react'
+import { Pivot, PivotItem, IStyleSet, ILabelStyles, Text, Stack, DefaultPalette, FontIcon, IconNames } from '@fluentui/react'
 import Client from '../lib/miniclient'
 import UserCard from '../components/usercard'
 import StreamCode from '../components/streamcode';
 import Title from '../components/title';
 import ChangePassword from '../components/change-password';
+import styles from '../lib/styles';
 
 const componentStyles: Partial<IStyleSet<ILabelStyles>> = {
     root: {
@@ -20,16 +21,21 @@ export default function Home() {
     }
 
 
-    return (<Stack horizontal horizontalAlign="center">
+    return (<Stack horizontal>
         <Stack.Item grow styles={{ root: { maxWidth: 500 } }}>
-            <Title text="我的"></Title>
             <Pivot>
                 {Object.entries(items).map(([title, Component]) => {
                     return (<PivotItem headerText={title} key={title}>
-                        <Component client={client} styles={componentStyles}></Component>
+                        <Component styles={componentStyles}></Component>
                     </PivotItem>)
                 })}
             </Pivot>
+        </Stack.Item>
+        <Stack.Item grow>
+            <Stack tokens={{childrenGap: 8}} style={{ width: 'calc(100%-6vh)', margin: "3vh 0 3vh 3vh", padding: "3vh 0", border: 'dashed', borderColor: DefaultPalette.neutralLight}} horizontalAlign="center" verticalAlign="center">
+                <FontIcon iconName={'FollowUser'} style={{fontSize: '10em', color: DefaultPalette.neutralLight}}></FontIcon>
+                <Text variant="xLarge" style={{color: DefaultPalette.neutralLight}}>欢迎来到 Minitube！这里过不了多久就会显示您关注的人辣！</Text>
+            </Stack>
         </Stack.Item>
     </Stack>)
 }
