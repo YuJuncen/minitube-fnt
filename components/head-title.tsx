@@ -36,7 +36,7 @@ export default function HeadTitle() {
     const titleStyle: CSSProperties = {
         position: 'sticky',
         top: 0,
-        zIndex: 1001,
+        zIndex: 1010,
         backgroundColor: DefaultPalette.white,
         border: 'solid',
         borderWidth: '0 0 1px 0',

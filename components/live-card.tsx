@@ -20,7 +20,7 @@ export default function LiveCard({live, ...props}: {live: LiveProfile} & IDocume
             },
             
         ],
-        styles: { previewIcon: { backgroundColor: color}, root: {height: "10em"} },
+        styles: { previewIcon: { backgroundColor: live?.living ? color : DefaultPalette.blackTranslucent40}, root: {height: "10em"} },
     };
     const router = useRouter()
     const toLive = useCallback(() => router.push(`/live/${live.username}`), null)

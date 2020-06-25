@@ -5,37 +5,36 @@ import StreamCode from '../components/streamcode';
 import Title from '../components/title';
 import ChangePassword from '../components/change-password';
 import styles from '../lib/styles';
+import { useContext } from 'react';
+import MinitubeContext from '../lib/global';
+import FollowerList from '../components/follower-list';
+import FollowingList from '../components/following-list';
 
-const componentStyles: Partial<IStyleSet<ILabelStyles>> = {
-    root: {
-        marginTop: 10,
-    },
-};
+
 
 export default function Home() {
-    const client = Client.global()
+    const { client } = useContext(MinitubeContext)
     const items = {
-        '关于我': UserCard,
         '我的推流码': StreamCode,
         '修改密码': ChangePassword,
+        '关注我的': FollowerList,
+        '我关注的': FollowingList
     }
 
 
-    return (<Stack horizontal>
+    return (<Stack horizontal tokens={{childrenGap: 48}}>
         <Stack.Item grow styles={{ root: { maxWidth: 500 } }}>
+            <UserCard></UserCard>
+        </Stack.Item>
+        <Stack.Item grow>
             <Pivot>
                 {Object.entries(items).map(([title, Component]) => {
-                    return (<PivotItem headerText={title} key={title}>
-                        <Component styles={componentStyles}></Component>
+                    return (
+                    <PivotItem headerText={title} key={title}>
+                        <div style={{marginTop: 12}}><Component></Component></div>
                     </PivotItem>)
                 })}
             </Pivot>
-        </Stack.Item>
-        <Stack.Item grow>
-            <Stack tokens={{childrenGap: 8}} style={{ width: 'calc(100%-6vh)', margin: "3vh 0 3vh 3vh", padding: "3vh 0", border: 'dashed', borderColor: DefaultPalette.neutralLight}} horizontalAlign="center" verticalAlign="center">
-                <FontIcon iconName={'FollowUser'} style={{fontSize: '10em', color: DefaultPalette.neutralLight}}></FontIcon>
-                <Text variant="xLarge" style={{color: DefaultPalette.neutralLight}}>欢迎来到 Minitube！这里过不了多久就会显示您关注的人辣！</Text>
-            </Stack>
         </Stack.Item>
     </Stack>)
 }

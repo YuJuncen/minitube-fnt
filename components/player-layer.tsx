@@ -42,7 +42,7 @@ export default function PlayerLayer({ ...events }: Partial<IPlayerLayerControls>
         }
     })
     const sendDanmaku = useCallback(() => {
-        events?.onSendDanmaku({ content: danmaku })
+        events?.onSendDanmaku?.call(this, { content: danmaku })
         setDanmaku('')
     }, [])
     const getIconProps = (name: string): IIconProps => {

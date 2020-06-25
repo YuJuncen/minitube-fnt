@@ -2,7 +2,8 @@ import sha256 from 'crypto-js/sha256'
 import { parseCookies, setCookie, destroyCookie } from 'nookies'
 import codes from './codes'
 import utils from './utils'
-import { User, DiffUserInfo, Profile, LiveProfile } from './models'
+import { User, DiffUserInfo, Profile, LiveProfile, History } from './models'
+import { LoadedEnvFiles } from 'next/dist/lib/load-env-config'
 type LoginResult = { code: 200, expire: string, token: string } | { code: number, message: string }
 type Success<T> = { code: 200 } & T
 type Fail = { code: number, message: string }
@@ -217,6 +218,34 @@ class Client {
 
     async getRandomLiveRooms(count: number) : Promise<Reply<{users: LiveProfile[]}>> {
         return await this.fetchJSON(`${this.apiURL}/living/${count}`, {})
+    }
+ 
+    async getHistory() : Promise<Reply<{history: History[]}>> {
+        return await this.fetchJSON(`${this.apiURL}/user/history`, {
+            headers: await this.getHeaders()
+        })
+    }
+
+    async followTo(username: string) : Promise<Reply<{}>> {
+        return await this.fetchJSON(`${this.apiURL}/user/follow/${username}`, {
+            method: "POST",
+            headers: await this.getHeaders()
+        })
+    }
+
+    async followerOf(username: string) : Promise<Reply<{followers: LiveProfile[]}>> {
+        return await this.fetchJSON(`${this.apiURL}/followers/${username}`, {})
+    }
+
+    async followingOf(username: string) : Promise<Reply<{followings: LiveProfile[]}>> {
+        return await this.fetchJSON(`${this.apiURL}/followings/${username}`, {})
+    }
+
+    async unfollow(username: string) : Promise<Reply<{}>> {
+        return await this.fetchJSON(`${this.apiURL}/user/unfollow/${username}`, {
+            method: "POST",
+            headers: await this.getHeaders()
+        })
     }
 }
 
