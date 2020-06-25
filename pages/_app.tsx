@@ -41,7 +41,7 @@ function MyApp({ Component, pageProps }) {
     }, [])
     return <MinitubeContext.Provider value={{ user, setUser, client: Client.global() }}>
         <Customizer {...FluentCustomizations}>
-            {isLoading && <Stack style={{ ...styles.overlay, backgroundColor: DefaultPalette.neutralLighter, backdropFilter: 'blur(4px)', zIndex: 1009 }} verticalAlign="center" horizontalAlign="center">
+            {isLoading && <Stack style={{ ...styles.overlay, backgroundColor: DefaultPalette.neutralLighter, backdropFilter: 'blur(4px)', zIndex: 1011 }} verticalAlign="center" horizontalAlign="center">
                 <Stack.Item key="loading">
                     <Spinner styles={{
                         circle: {

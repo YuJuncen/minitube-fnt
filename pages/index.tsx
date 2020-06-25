@@ -43,7 +43,7 @@ export default function Index() {
                 for (const h of his.history) {
                     if (result.length > 12) return
                     const live = await client.getProfileOf(h.username)
-                    if (Client.isOK(live) && live.user.living) {
+                    if (Client.isOK(live)) {
                         result.push({ ...live.user, timestamp: h.timestamp})
                     }
                 }
@@ -74,7 +74,7 @@ export default function Index() {
         fetchFollowing()
     }, [user])
     const renderLive = useCallback((live: LiveProfile, idx: number) => {
-        return <Stack.Item grow key={`item-${idx}`}> <LiveCard live={live}></LiveCard> </Stack.Item>
+        return <Stack.Item styles={{root: {width: '25%'}}} key={`item-${idx}`}> <LiveCard style={{height: '100%'}} live={live}></LiveCard> </Stack.Item>
     }, [])
     return <>
         {followingLives?.length > 0 && [

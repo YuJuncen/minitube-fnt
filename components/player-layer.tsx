@@ -44,7 +44,7 @@ export default function PlayerLayer({ ...events }: Partial<IPlayerLayerControls>
     const sendDanmaku = useCallback(() => {
         events?.onSendDanmaku?.call(this, { content: danmaku })
         setDanmaku('')
-    }, [])
+    }, [danmaku])
     const getIconProps = (name: string): IIconProps => {
         return { iconName: name, className: iconClass }
     }
@@ -116,7 +116,9 @@ export default function PlayerLayer({ ...events }: Partial<IPlayerLayerControls>
 
                 {fullScreen && events.danmakuIsOn ? [
                     <Stack.Item key="gap" grow>
-                        <TextField placeholder="发送弹幕!" borderless value={danmaku} onChange={(_, v) => setDanmaku(v)}></TextField>
+                        <TextField placeholder="发送弹幕!" borderless value={danmaku} 
+                        onKeyUp={(e) => danmaku.length && e.key == 'Enter' && sendDanmaku()}
+                        onChange={(_, v) => setDanmaku(v)}></TextField>
                     </Stack.Item>,
                     <Stack.Item key="send">
                         <IconButton disabled={danmaku.length == 0} iconProps={{ iconName: "Send" }} onClick={sendDanmaku}></IconButton>

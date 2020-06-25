@@ -35,6 +35,10 @@ export default function DanmakuList({ danmakus }: { danmakus: EventEmitter }) {
             activityPersonas={[{ text: d.user.username, imageInitials: 'U' }]}
         />
     }, [])
+    const send = useCallback(() => {
+        pushDanmaku(userDanmaku)
+        setUserDanmu('')
+    }, [userDanmaku])
     return (
         <Card tokens={{ padding: 's1 s1', maxHeight: '75vh' }}>
             <Card.Item styles={{ root: { height: '100%' } }}>
@@ -55,6 +59,7 @@ export default function DanmakuList({ danmakus }: { danmakus: EventEmitter }) {
                                     borderless
                                     disabled={currentUser==null}
                                     style={styles.growToHMax}
+                                    onKeyUp={(e) => userDanmaku.length && e.key == 'Enter' && send()}
                                     onChange={(_, v) => setUserDanmu(v)}
                                 ></TextField>
                             </Stack.Item>
@@ -62,10 +67,7 @@ export default function DanmakuList({ danmakus }: { danmakus: EventEmitter }) {
                                 <IconButton
                                     disabled={userDanmaku.length == 0 || currentUser==null}
                                     iconProps={{ iconName: 'Send' }}
-                                    onClick={() => {
-                                        pushDanmaku(userDanmaku)
-                                        setUserDanmu('')
-                                    }}></IconButton>
+                                    onClick={send}></IconButton>
                             </Stack.Item>
                         </Stack>
                     </Stack.Item>

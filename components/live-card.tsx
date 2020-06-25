@@ -1,4 +1,4 @@
-import { DocumentCardTitle, DocumentCard, DocumentCardActivity, DocumentCardType, IDocumentCardPreviewProps, DefaultPalette, DocumentCardPreview, IconNames, DefaultFontStyles, IDocumentCard, IDocumentCardProps } from "@fluentui/react";
+import { DocumentCardTitle, DocumentCard, DocumentCardActivity, DocumentCardType, IDocumentCardPreviewProps, DefaultPalette, DocumentCardPreview, IconNames, DefaultFontStyles, IDocumentCard, IDocumentCardProps, DocumentCardLogo, DocumentCardStatus } from "@fluentui/react";
 import { LiveProfile } from "../lib/models";
 import { useRouter } from "next/router";
 import { useCallback, useMemo } from "react";
@@ -10,28 +10,17 @@ const colors = [
 ]
 export default function LiveCard({live, ...props}: {live: LiveProfile} & IDocumentCardProps) {
     const color = useMemo(() => colors[Math.floor(Math.random() * 3)], [])
-    const previewPropsUsingIcon: IDocumentCardPreviewProps = {
-        previewImages: [
-            {
-                previewIconProps: {
-                    iconName: 'Streaming',
-                    styles: { root: { fontSize: DefaultFontStyles.superLarge.fontSize, color: DefaultPalette.white } },
-                },
-            },
-            
-        ],
-        styles: { previewIcon: { backgroundColor: live?.living ? color : DefaultPalette.blackTranslucent40}, root: {height: "10em"} },
-    };
     const router = useRouter()
     const toLive = useCallback(() => router.push(`/live/${live.username}`), null)
-    const liveTime = useMemo(() => live.living ? `主播在 ${timeago.format(live.start_time, 'zh_CN')} 开播～` : "主播走了！", [live])
+    const liveTime = useMemo(() => live.living ? `${timeago.format(live.start_time, 'zh_CN')}开播` : "未开播", [live])
     return (
         <DocumentCard
             {...props}
             onClick={toLive}>
-            <DocumentCardPreview {...previewPropsUsingIcon} />
+            <DocumentCardLogo logoIcon="Streaming"></DocumentCardLogo>
             <DocumentCardTitle styles={{root: {height: "auto", paddingBottom: 0}}} title={live.live_name || `${live.username} 的直播间`} />
-            <DocumentCardTitle styles={{root: {height: "auto", paddingBottom: 0}}} showAsSecondaryTitle title={live.live_intro} />
+            <DocumentCardTitle styles={{root: {height: "auto", paddingBottom: 0}}} showAsSecondaryTitle title={live.live_intro || '随便播一下～'} />
+            <DocumentCardStatus statusIcon={'People'} status={`${Math.max(0, live.watching)} 人观看`} />
             <DocumentCardActivity
                 activity={liveTime}
                 people={[{

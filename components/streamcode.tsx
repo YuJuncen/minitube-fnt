@@ -12,7 +12,7 @@ export default function StreamCode({...props}: IStackProps) {
     const [code, setCode] = useState('')
     const [error, setError] = useState(null)
     const [hidden, setHidden] = useState(true)
-    const {client} = useContext(MinitubeContext)
+    const {client, user} = useContext(MinitubeContext)
     const [message, setMessage] = useState({
         type: MessageBarType.success,
         message: "已经获得推流码！"
@@ -43,6 +43,7 @@ export default function StreamCode({...props}: IStackProps) {
             >
                 <b>{message.message}</b>
             </MessageBar>,
+            <TextField label="我的直播间地址" value={`${client.apiURL}/live/${user.username}`} readOnly></TextField>,
             <Stack verticalAlign="space-between" tokens={{childrenGap: 12}}>
                 <Stack.Item grow={1}>
                     <Stack horizontal verticalAlign="end">

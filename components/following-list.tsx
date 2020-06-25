@@ -3,7 +3,8 @@ import MinitubeContext from "../lib/global";
 import FollowList from "./follow-list";
 import Client from "../lib/miniclient";
 import PlaceHolder from "./placeholder";
-import { IconNames, Shimmer } from "@fluentui/react";
+import { IconNames, Shimmer, Stack } from "@fluentui/react";
+import LiveCard from "./live-card";
 
 export default function FollowingList() {
     const {client, user} = useContext(MinitubeContext)
@@ -21,5 +22,11 @@ export default function FollowingList() {
     <Shimmer></Shimmer> :
     followings.length == 0 ? 
     <PlaceHolder text="你没有关注任何人" icon='Balloons'></PlaceHolder> :
-        <FollowList users={followings} action="取消关注" onAction={(user) => {client.unfollow(user.username)}}></FollowList>
+       <Stack horizontal wrap tokens={{childrenGap: 12}}>
+           {followings.map((l, i) => {
+               return <Stack.Item styles={{root: {width: 'calc(50% - 12px)'}}} key={`${i}-follow`}>
+                   <LiveCard style={{height: "100%"}} live={l}></LiveCard>
+               </Stack.Item>
+           }) }
+       </Stack>
 }

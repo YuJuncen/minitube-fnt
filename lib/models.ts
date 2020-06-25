@@ -1,3 +1,5 @@
+import { EventEmitter } from "events"
+
 type User = {
     id: number,
     created_at: string,
@@ -63,8 +65,14 @@ enum FollowState {
     UNKNOWN = -1
 }
 
+type LiveStream = {
+    close: () => void,
+    danmakus: EventEmitter,
+    source: string,
+}
+
 const isFollowed = (state: FollowState) : boolean => state == FollowState.FOLLOW_EACH_OTHER || state == FollowState.I_FOLLOWED
 const notFollowed = (state: FollowState) : boolean => !isFollowed(state)
 
 export default { defaultUser, FollowState, isFollowed, notFollowed }
-export type { User, DiffUserInfo, Danmaku, Profile, LiveProfile, History, FollowState }
+export type { User, DiffUserInfo, Danmaku, Profile, LiveProfile, History, FollowState, LiveStream }

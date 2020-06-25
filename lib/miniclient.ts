@@ -2,8 +2,9 @@ import sha256 from 'crypto-js/sha256'
 import { parseCookies, setCookie, destroyCookie } from 'nookies'
 import codes from './codes'
 import utils from './utils'
-import { User, DiffUserInfo, Profile, LiveProfile, History } from './models'
+import { User, DiffUserInfo, Profile, LiveProfile, History, LiveStream, Danmaku } from './models'
 import { LoadedEnvFiles } from 'next/dist/lib/load-env-config'
+import { EventEmitter } from 'events'
 type LoginResult = { code: 200, expire: string, token: string } | { code: number, message: string }
 type Success<T> = { code: 200 } & T
 type Fail = { code: number, message: string }
@@ -27,9 +28,24 @@ class Client {
         return `${this.apiURL}:8080/live/${username}.flv`
     }
 
+    async connectToStream(username: string) : Promise<LiveStream> {
+        const events = new EventEmitter()
+        events.on("danmaku", (d: Danmaku) => {
+            console.log("sending danmaku to server:", d)
+        })
+        return {
+            close() {
+                events.removeAllListeners()
+            },
+            danmakus: events,
+            source: this.pullStreamAPIFor(username)
+        }
+    }
+
     async getHeaders(): Promise<any> {
         const headers = {}
         headers['Content-Type'] = 'application/json'
+        console.log(this.token)
         if (this.token.length) {
             headers['Authorization'] = `MiniTube ${await this.getOrRefreshToken()}`
         }
@@ -212,7 +228,9 @@ class Client {
     }
 
     async getProfileOf(user: string) : Promise<Reply<{user: LiveProfile}>> {
-        const result = await this.fetchJSON(`${this.apiURL}/profile/${user}`, {})
+        const result = await this.fetchJSON(`${this.apiURL}/profile/${user}`, {
+            headers: await this.getHeaders()
+        })
         return result
     }
 
@@ -234,11 +252,15 @@ class Client {
     }
 
     async followerOf(username: string) : Promise<Reply<{followers: LiveProfile[]}>> {
-        return await this.fetchJSON(`${this.apiURL}/followers/${username}`, {})
+        return await this.fetchJSON(`${this.apiURL}/followers/${username}`, {
+            headers: await this.getHeaders()
+        })
     }
 
     async followingOf(username: string) : Promise<Reply<{followings: LiveProfile[]}>> {
-        return await this.fetchJSON(`${this.apiURL}/followings/${username}`, {})
+        return await this.fetchJSON(`${this.apiURL}/followings/${username}`, {
+            headers: await this.getHeaders()
+        })
     }
 
     async unfollow(username: string) : Promise<Reply<{}>> {
